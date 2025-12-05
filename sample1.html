@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>B.Voc – Professional Programme</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Poppins', sArial; }
+    
+    /* Hero */
+    .hero {
+      background: url('https://images.pexels.com/photos/3184306/pexels-photo-3184306.jpeg') center/cover no-repeat;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      color: white;
+      position: relative;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.55);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .course-card:hover {
+      transform: translateY(-5px);
+      transition: 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">B.Voc Program</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+        <li class="nav-item"><a href="#courses" class="nav-link">Specializations</a></li>
+        <li class="nav-item"><a href="#career" class="nav-link">Career</a></li>
+        <li class="nav-item"><a href="#admission" class="nav-link">Admission</a></li>
+        <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container hero-content text-center">
+    <h1 class="display-4 fw-bold">Build Your Career With B.Voc</h1>
+    <p class="lead">A job-oriented professional degree designed to develop real industry skills.</p>
+    <a href="#contact" class="btn btn-primary btn-lg px-4 mt-3">
+      Apply Now
+    </a>
+  </div>
+</section>
+
+<!-- About -->
+<section class="py-5" id="about">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-3">About B.Voc Programme</h2>
+    <p class="text-center mb-4">
+      B.Voc (Bachelor of Vocation) is a skill-based degree focusing on hands-on training,
+      industry exposure and real-time learning, designed to make students job-ready from day one.
+    </p>
+
+    <div class="row g-4">
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <i class="fa-solid fa-laptop fa-3x text-primary mb-3"></i>
+          <h5>Industry Skills</h5>
+          <p>Learn practical, applicable skills directly used in top industries.</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <i class="fa-solid fa-briefcase fa-3x text-primary mb-3"></i>
+          <h5>100% Practical Training</h5>
+          <p>Hands-on sessions, workshops, and real projects.</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <i class="fa-solid fa-certificate fa-3x text-primary mb-3"></i>
+          <h5>NSQF Certified</h5>
+          <p>Government-approved curriculum designed for employability.</p>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center p-3 shadow-sm">
+          <i class="fa-solid fa-users fa-3x text-primary mb-3"></i>
+          <h5>Industry Internships</h5>
+          <p>Gain real workplace experience with top companies.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Courses -->
+<section class="bg-light py-5" id="courses">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">B.Voc Specializations</h2>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card course-card shadow-sm border-0">
+          <img src="https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg" class="card-img-top" alt="">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">B.Voc in Software Development</h5>
+            <p>Learn full-stack development, UI/UX, cloud computing and more.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card course-card shadow-sm border-0">
+          <img src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg" class="card-img-top" alt="">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">B.Voc in Banking & Finance</h5>
+            <p>Build skills in accounting, investment, taxation and financial analysis.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card course-card shadow-sm border-0">
+          <img src="https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg" class="card-img-top" alt="">
+          <div class="card-body">
+            <h5 class="card-title fw-bold">B.Voc in Healthcare Management</h5>
+            <p>Training for hospital operations, medical billing, and health services.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Career -->
+<section class="py-5" id="career">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">Career Opportunities</h2>
+
+    <ul class="list-group list-group-flush fs-5">
+      <li class="list-group-item"><i class="fa fa-check text-primary me-2"></i> Software Developer / IT Technician</li>
+      <li class="list-group-item"><i class="fa fa-check text-primary me-2"></i> Banking Assistant / Financial Analyst</li>
+      <li class="list-group-item"><i class="fa fa-check text-primary me-2"></i> Healthcare Coordinator / Hospital Admin</li>
+      <li class="list-group-item"><i class="fa fa-check text-primary me-2"></i> Digital Marketing Executive</li>
+      <li class="list-group-item"><i class="fa fa-check text-primary me-2"></i> Technical Support Engineer</li>
+    </ul>
+  </div>
+</section>
+
+<!-- Admission -->
+<section class="bg-light py-5" id="admission">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">Admission Process</h2>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <ol class="list-group list-group-numbered fs-5">
+          <li class="list-group-item">Fill Online Application Form</li>
+          <li class="list-group-item">Upload Required Documents</li>
+          <li class="list-group-item">Counselling & Interview</li>
+          <li class="list-group-item">Confirm Admission & Pay Fees</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="py-5" id="contact">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">Contact Us</h2>
+
+    <div class="row g-4">
+      <div class="col-md-6">
+        <h5><i class="fa fa-location-dot text-primary"></i> Address</h5>
+        <p>123 Education Road, Ahmedabad, India</p>
+
+        <h5><i class="fa fa-phone text-primary"></i> Phone</h5>
+        <p>+91 98765 43210</p>
+
+        <h5><i class="fa fa-envelope text-primary"></i> Email</h5>
+        <p>info@bvoccollege.com</p>
+      </div>
+
+      <div class="col-md-6">
+        <form class="p-4 shadow-sm bg-white rounded">
+          <input type="text" class="form-control mb-3" placeholder="Name" required>
+          <input type="email" class="form-control mb-3" placeholder="Email" required>
+          <textarea class="form-control mb-3" rows="4" placeholder="Message" required></textarea>
+          <button class="btn btn-primary w-100">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-3 text-center">
+  B.Voc Programme © 2025 • All Rights Reserved
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
