@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Dashboard — B.Voc</title>
+
+  <!-- Bootstrap & FontAwesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+
+  <!-- Chart.js (for charts) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f4f6f9; --card:#ffffff; --text:#0f1724; --muted:#6b7280; --accent:#7c3aed;
+      --sidebar:#0f1724; --sidebar-contrast:#0b1220;
+    }
+    [data-theme="dark"]{
+      --bg:#071029; --card:#07172a; --text:#e6eef6; --muted:#9aa6b2; --accent:#8b5cf6;
+      --sidebar:#06090f; --sidebar-contrast:#06121b;
+    }
+
+    body{ margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text); min-height:100vh; }
+
+    /* Sidebar */
+    .sidebar{
+      position:fixed; left:0; top:0; bottom:0; width:260px; background:linear-gradient(180deg,var(--sidebar),var(--sidebar-contrast)); color:#fff; padding-top:22px;
+      box-shadow: 0 6px 24px rgba(2,6,23,0.2);
+    }
+    .brand{ padding: 0 22px; display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+    .brand .name{ font-weight:700; letter-spacing:0.3px; color:var(--accent); }
+    .nav-link { color: #cbd5e1; padding:12px 20px; display:flex; gap:12px; align-items:center; border-radius:8px; margin:4px 10px; }
+    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.04); color:#fff; text-decoration:none; }
+
+    /* collapsible small screen */
+    @media (max-width:992px){
+      .sidebar{ left:-280px; transition:0.35s; z-index:1050; }
+      .sidebar.show{ left:0; }
+      .content{ margin-left:0; }
+    }
+
+    /* main content */
+    .content{ margin-left:260px; padding:22px; transition:0.3s; min-height:100vh; }
+    @media (max-width:992px){ .content{ padding:14px; } }
+
+    .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+    .topbar .search{ width:360px; max-width:55%; }
+    .topbar .actions{ display:flex; gap:12px; align-items:center; }
+
+    .card-hover:hover{ transform: translateY(-6px); transition: 0.25s ease; }
+
+    /* table small */
+    .table thead th { vertical-align:middle; }
+
+    /* small helpers */
+    .muted{ color:var(--muted); }
+
+    /* mobile small search */
+    @media (max-width:576px){
+      .topbar .search{ display:none; }
+    }
+  </style>
+</head>
+<body data-theme>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="brand mb-3">
+    <i class="fa fa-graduation-cap fa-lg" style="color:var(--accent)"></i>
+    <div>
+      <div class="name">B.Voc Admin</div>
+      <div class="muted small">Manage students & courses</div>
+    </div>
+  </div>
+
+  <a href="#" class="nav-link active" data-target="dashboard"><i class="fa fa-home"></i> Dashboard</a>
+  <a href="#" class="nav-link" data-target="students"><i class="fa fa-users"></i> Students</a>
+  <a href="#" class="nav-link" data-target="courses"><i class="fa fa-book"></i> Courses</a>
+  <a href="#" class="nav-link" data-target="analytics"><i class="fa fa-chart-simple"></i> Analytics</a>
+  <a href="#" class="nav-link" data-target="messages"><i class="fa fa-envelope"></i> Messages</a>
+  <div style="position:absolute;bottom:18px;width:100%;padding:0 18px;">
+    <button id="logoutBtn" class="btn btn-sm btn-outline-light w-100"><i class="fa fa-sign-out-alt me-2"></i> Logout</button>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="content" id="mainContent">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-outline-secondary d-lg-none" id="sidebarToggle"><i class="fa fa-bars"></i></button>
+      <h4 class="m-0">Dashboard</h4>
+      <small class="muted ms-2" id="welcomeUser"></small>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+      <input class="form-control form-control-sm search" id="globalSearch" placeholder="Search students, courses..." />
+      <div class="actions d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-light" id="themeToggle" title="Toggle dark mode"><i class="fa fa-moon"></i></button>
+        <button class="btn btn-sm btn-primary" id="addStudentBtn"><i class="fa fa-user-plus me-1"></i> Add Student</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages container -->
+  <div id="pages">
+
+    <!-- ========== DASHBOARD PAGE ========== -->
+    <section id="dashboardPage">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card p-3 card-hover shadow-sm">
+            <small class="muted">Total Students</small>
+            <h3 id="statStudents">0</h3>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-3 card-hover shadow-sm">
+            <small class="muted">Courses</small>
+            <h3 id="statCourses">0</h3>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-3 card-hover shadow-sm">
+            <small class="muted">Messages</small>
+            <h3 id="statMessages">0</h3>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-3 card-hover shadow-sm">
+            <small class="muted">Pending Tasks</small>
+            <h3 id="statTasks">0</h3>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-3">
+        <div class="col-lg-8">
+          <div class="card p-3 shadow-sm">
+            <h6>Enrollment — Last 12 months</h6>
+            <canvas id="lineChart" height="140"></canvas>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <div class="card p-3 shadow-sm">
+            <h6>Course distribution</h6>
+            <canvas id="pieChart" height="220"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== STUDENTS PAGE ========== -->
+    <section id="studentsPage" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="m-0">Students</h5>
+        <div class="muted small">Manage student records (local demo)</div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover" id="studentsTable">
+              <thead class="table-light">
+                <tr><th>#</th><th>Name</th><th>Course</th><th>Email</th><th>Joined</th><th>Actions</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== COURSES PAGE (simple list) ========== -->
+    <section id="coursesPage" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="m-0">Courses</h5>
+        <button class="btn btn-sm btn-outline-primary" id="addCourseBtn"><i class="fa fa-plus me-1"></i> Add Course</button>
+      </div>
+
+      <div class="card p-3 shadow-sm">
+        <ul class="list-group" id="coursesList"></ul>
+      </div>
+    </section>
+
+    <!-- ========== ANALYTICS PAGE ========== -->
+    <section id="analyticsPage" style="display:none;">
+      <h5>Analytics</h5>
+      <div class="card p-3 shadow-sm mt-2">
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Students by month</h6>
+            <canvas id="barChart" height="180"></canvas>
+          </div>
+          <div class="col-md-6">
+            <h6>Quick stats</h6>
+            <ul class="list-unstyled">
+              <li><strong id="statActive">0</strong> active students</li>
+              <li><strong id="statAvg">0</strong> avg courses/student</li>
+              <li><strong id="statPlacement">0%</strong> placement rate</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== MESSAGES PAGE (placeholder) ========== -->
+    <section id="messagesPage" style="display:none;">
+      <link src ="sample1.html" rel="stylesheet">
+      <h5>Messages</h5>
+      <div class="card p-3 shadow-sm mt-2">
+        <p class="muted">No messages in demo mode. Hook this to your backend / email provider.</p>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ====== Modals: Add/Edit Student, Add Course ====== -->
+
+<!-- Student Modal -->
+<div class="modal fade" id="studentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-md modal-dialog-centered">
+    <div class="modal-content">
+      <form id="studentForm" class="needs-validation" novalidate>
+        <div class="modal-header">
+          <h5 class="modal-title" id="studentModalTitle">Add Student</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="studentId" />
+          <div class="mb-2">
+            <label class="form-label">Name</label>
+            <input id="studentName" class="form-control" required />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Email</label>
+            <input id="studentEmail" type="email" class="form-control" required />
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Course</label>
+            <select id="studentCourse" class="form-select" required></select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Joined</label>
+            <input id="studentJoined" type="date" class="form-control" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Course Modal -->
+<div class="modal fade" id="courseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <form id="courseForm">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Course</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Course Name</label>
+            <input id="courseName" class="form-control" required />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" type="submit">Add</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* =======================
+   Demo "backend" storage
+   ======================= */
+const STORAGE_KEYS = {
+  token: 'bvoc_token',    // demo token
+  user: 'bvoc_user',
+  students: 'bvoc_students',
+  courses: 'bvoc_courses',
+  theme: 'bvoc_theme'
+};
+
+// redirect to login if not authenticated (demo)
+if (!localStorage.getItem(STORAGE_KEYS.token)) {
+  window.location = 'login.html';
+}
+
+// set welcome user
+document.getElementById('welcomeUser').innerText = localStorage.getItem('STORAGE_KEYS.user') || '';
+
+
+
+// default demo data (only set if not present)
+if (!localStorage.getItem(STORAGE_KEYS.courses)) {
+  const defaultCourses = ['B.Voc Software','B.Voc Finance','B.Voc Healthcare'];
+  localStorage.setItem(STORAGE_KEYS.courses, JSON.stringify(defaultCourses));
+}
+if (!localStorage.getItem(STORAGE_KEYS.students)) {
+  const now = new Date();
+  const d = (n)=>{ const day = new Date(now.getFullYear(), now.getMonth()-n, 5).toISOString().slice(0,10); return day; };
+  const demo = [
+    {id: genId(), name:'Rahul Sharma', email:'rahul@example.com', course:'B.Voc Software', joined:d(0)},
+    {id: genId(), name:'Priya Patel', email:'priya@example.com', course:'B.Voc Finance', joined:d(1)},
+    {id: genId(), name:'Arjun Mehta', email:'arjun@example.com', course:'B.Voc Healthcare', joined:d(2)}
+  ];
+  localStorage.setItem(STORAGE_KEYS.students, JSON.stringify(demo));
+}
+
+/* =======================
+   Utils
+   ======================= */
+function genId(){ return 's_' + Math.random().toString(36).slice(2,9); }
+function read(key){ return JSON.parse(localStorage.getItem(key) || 'null'); }
+function write(key, v){ localStorage.setItem(key, JSON.stringify(v)); }
+function qs(sel){ return document.querySelector(sel); }
+function qsa(sel){ return Array.from(document.querySelectorAll(sel)); }
+
+/* =======================
+   Sidebar navigation
+   ======================= */
+qsa('.nav-link').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    qsa('.nav-link').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    const target = a.dataset.target;
+    // show/hide pages
+    ['dashboard','students','courses','analytics','messages'].forEach(p=>{
+      const el = qs(`#${p}Page`);
+      if (!el) return;
+      el.style.display = (p===target) ? '' : 'none';
+    });
+    // update charts when analytics or dashboard shown
+    if (target === 'analytics') updateAnalytics();
+    if (target === 'dashboard') updateDashboardCharts();
+  });
+});
+
+/* =======================
+   Sidebar toggle (mobile)
+   ======================= */
+const sidebar = qs('#sidebar');
+qs('#sidebarToggle').addEventListener('click', ()=> sidebar.classList.toggle('show'));
+
+/* =======================
+   Theme (dark mode)
+   ======================= */
+const themeToggle = qs('#themeToggle');
+function applyTheme(theme){
+  document.body.setAttribute('data-theme', theme);
+  localStorage.setItem(STORAGE_KEYS.theme, theme);
+  themeToggle.innerHTML = theme === 'dark' ? '<i class="fa fa-sun"></i>' : '<i class="fa fa-moon"></i>';
+}
+const savedTheme = localStorage.getItem(STORAGE_KEYS.theme) || 'dark';
+applyTheme(savedTheme);
+themeToggle.addEventListener('click', ()=> applyTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+/* =======================
+   Logout
+   ======================= */
+qs('#logoutBtn').addEventListener('click', ()=>{
+  localStorage.removeItem(STORAGE_KEYS.token);
+  localStorage.removeItem(STORAGE_KEYS.user);
+  window.location = 'login.html';
+});
+
+/* =======================
+   Students CRUD (localStorage)
+   ======================= */
+const studentsTableBody = qs('#studentsTable tbody');
+function renderStudents(){
+  const students = read(STORAGE_KEYS.students) || [];
+  studentsTableBody.innerHTML = '';
+  students.forEach((s, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(s.course)}</td>
+      <td>${escapeHtml(s.email)}</td>
+      <td>${s.joined}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-primary btn-edit" data-id="${s.id}"><i class="fa fa-pen"></i></button>
+        <button class="btn btn-sm btn-outline-danger btn-del" data-id="${s.id}"><i class="fa fa-trash"></i></button>
+      </td>
+    `;
+    studentsTableBody.appendChild(tr);
+  });
+
+  qsa('.btn-edit').forEach(btn => btn.addEventListener('click', e=>{
+    const id = btn.dataset.id;
+    openStudentModal(id);
+  }));
+  qsa('.btn-del').forEach(btn => btn.addEventListener('click', e=>{
+    const id = btn.dataset.id;
+    if (!confirm('Delete this student?')) return;
+    deleteStudent(id);
+  }));
+
+  // update stats
+  qs('#statStudents').innerText = (read(STORAGE_KEYS.students) || []).length;
+}
+function addStudent(student){
+  const arr = read(STORAGE_KEYS.students) || [];
+  arr.unshift(student);
+  write(STORAGE_KEYS.students, arr);
+  renderStudents();
+  updateDashboardCharts();
+}
+function updateStudent(updated){
+  let arr = read(STORAGE_KEYS.students) || [];
+  arr = arr.map(s => s.id === updated.id ? updated : s);
+  write(STORAGE_KEYS.students, arr);
+  renderStudents();
+  updateDashboardCharts();
+}
+function deleteStudent(id){
+  let arr = read(STORAGE_KEYS.students) || [];
+  arr = arr.filter(s => s.id !== id);
+  write(STORAGE_KEYS.students, arr);
+  renderStudents();
+  updateDashboardCharts();
+}
+
+/* Student modal */
+const studentModal = new bootstrap.Modal(qs('#studentModal'));
+function openStudentModal(id){
+  const courses = read(STORAGE_KEYS.courses) || [];
+  const sel = qs('#studentCourse');
+  sel.innerHTML = '';
+  courses.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+
+  if (id){
+    const s = (read(STORAGE_KEYS.students) || []).find(x=>x.id===id);
+    qs('#studentModalTitle').innerText = 'Edit Student';
+    qs('#studentId').value = s.id;
+    qs('#studentName').value = s.name;
+    qs('#studentEmail').value = s.email;
+    qs('#studentCourse').value = s.course;
+    qs('#studentJoined').value = s.joined;
+  } else {
+    qs('#studentModalTitle').innerText = 'Add Student';
+    qs('#studentId').value = '';
+    qs('#studentName').value = '';
+    qs('#studentEmail').value = '';
+    qs('#studentCourse').value = courses[0] || '';
+    qs('#studentJoined').value = new Date().toISOString().slice(0,10);
+  }
+  studentModal.show();
+}
+
+qs('#addStudentBtn').addEventListener('click', ()=> openStudentModal(null));
+
+qs('#studentForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const id = qs('#studentId').value || genId();
+  const student = {
+    id,
+    name: qs('#studentName').value.trim(),
+    email: qs('#studentEmail').value.trim(),
+    course: qs('#studentCourse').value,
+    joined: qs('#studentJoined').value
+  };
+  if (!qs('#studentId').value) addStudent(student); else updateStudent(student);
+  studentModal.hide();
+});
+
+/* =======================
+   Courses list & CRUD
+   ======================= */
+const coursesList = qs('#coursesList');
+function renderCourses(){
+  const courses = read(STORAGE_KEYS.courses) || [];
+  coursesList.innerHTML = '';
+  courses.forEach((c, i) => {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.innerHTML = `<div>${i+1}. ${escapeHtml(c)}</div>
+                    <div>
+                      <button class="btn btn-sm btn-outline-danger btn-course-del" data-name="${escapeHtml(c)}"><i class="fa fa-trash"></i></button>
+                    </div>`;
+    coursesList.appendChild(li);
+  });
+  qsa('.btn-course-del').forEach(b=>b.addEventListener('click', e=>{
+    const name = b.dataset.name;
+    if (!confirm('Delete course "' + name + '"?')) return;
+    let arr = read(STORAGE_KEYS.courses) || [];
+    arr = arr.filter(x=>x!==name);
+    write(STORAGE_KEYS.courses, arr);
+    renderCourses();
+    renderStudents(); // update selections
+    updateDashboardCharts();
+  }));
+  qs('#statCourses').innerText = (read(STORAGE_KEYS.courses) || []).length;
+}
+const courseModal = new bootstrap.Modal(qs('#courseModal'));
+qs('#addCourseBtn').addEventListener('click', ()=> {
+  qs('#courseName').value = '';
+  courseModal.show();
+});
+qs('#courseForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const name = qs('#courseName').value.trim();
+  if (!name) return;
+  const arr = read(STORAGE_KEYS.courses) || [];
+  arr.push(name);
+  write(STORAGE_KEYS.courses, arr);
+  courseModal.hide();
+  renderCourses();
+  populateCourseSelectors();
+  updateDashboardCharts();
+});
+
+/* Populate course selectors in student modal */
+function populateCourseSelectors(){
+  const courses = read(STORAGE_KEYS.courses) || [];
+  const sel = qs('#studentCourse');
+  sel.innerHTML = '';
+  courses.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o); });
+}
+
+/* =======================
+   Charts (Chart.js)
+   ======================= */
+let lineChart, pieChart, barChart;
+function updateDashboardCharts(){
+  const students = read(STORAGE_KEYS.students) || [];
+  const courses = read(STORAGE_KEYS.courses) || [];
+
+  // pie data - distribution by course
+  const byCourse = {};
+  courses.forEach(c=> byCourse[c]=0);
+  students.forEach(s => { byCourse[s.course] = (byCourse[s.course]||0)+1; });
+
+  const pieData = Object.values(byCourse);
+  const pieLabels = Object.keys(byCourse);
+
+  if (!pieChart){
+    pieChart = new Chart(qs('#pieChart'), {
+      type: 'pie', data: {labels: pieLabels, datasets:[{ data: pieData }]},
+      options:{responsive:true, plugins:{legend:{position:'bottom'}}}
+    });
+  } else {
+    pieChart.data.labels = pieLabels;
+    pieChart.data.datasets[0].data = pieData;
+    pieChart.update();
+  }
+
+  // line chart - simple monthly counts (demo: random-ish from students joined dates)
+  const months = Array.from({length:12}, (_,i)=> {
+    const d = new Date();
+    d.setMonth(d.getMonth() - (11-i));
+    return d.toLocaleString('default',{month:'short','year':'numeric'});
+  });
+
+  const monthCounts = months.map((m,i)=>{
+    const d = new Date();
+    d.setMonth(d.getMonth() - (11-i));
+    const key = d.getFullYear() + '-' + (d.getMonth()+1).toString().padStart(2,'0');
+    // count students whose joined starts with YYYY-MM
+    return (students.filter(s => s.joined && s.joined.startsWith(key)).length) || Math.floor(Math.random()*4);
+  });
+
+  if (!lineChart){
+    lineChart = new Chart(qs('#lineChart'), {
+      type: 'line',
+      data: { labels: months, datasets: [{ label:'Enrollments', data: monthCounts, tension:0.35, fill:true }]},
+      options: { responsive:true, plugins:{legend:{display:false}}}
+    });
+  } else {
+    lineChart.data.labels = months;
+    lineChart.data.datasets[0].data = monthCounts;
+    lineChart.update();
+  }
+
+  // bar chart for analytics
+  if (!barChart){
+    barChart = new Chart(qs('#barChart'), {
+      type:'bar',
+      data:{ labels: months.slice(6), datasets:[{ label:'New students', data: monthCounts.slice(6)}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}}
+    });
+  } else {
+    barChart.data.datasets[0].data = monthCounts.slice(6);
+    barChart.update();
+  }
+}
+
+/* Update analytics quick numbers */
+function updateAnalytics(){
+  const students = read(STORAGE_KEYS.students) || [];
+  qs('#statActive').innerText = Math.round(students.length * 0.86);
+  qs('#statAvg').innerText = (read(STORAGE_KEYS.courses) || []).length ? (students.length / (read(STORAGE_KEYS.courses)||[]).length).toFixed(1) : '0';
+  qs('#statPlacement').innerText = Math.min(99, Math.round(60 + Math.random()*30)) + '%';
+}
+
+/* ====== Helpers & boot ====== */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+renderCourses();
+renderStudents();
+populateCourseSelectors();
+updateDashboardCharts();
+updateAnalytics();
+
+/* Search */
+qs('#globalSearch').addEventListener('input', (e)=>{
+  const q = e.target.value.toLowerCase();
+  const rows = Array.from(qs('#studentsTable tbody').children);
+  rows.forEach(r=>{
+    const text = r.innerText.toLowerCase();
+    r.style.display = text.includes(q) ? '' : 'none';
+  });
+});
+</script>
+</body>
+</html>

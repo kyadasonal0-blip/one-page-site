@@ -1,0 +1,33 @@
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // Replace with your project's config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    // ...
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Example: read students
+  async function getStudentsFromFirestore(){
+    const snap = await db.collection('students').orderBy('created_at','desc').limit(100).get();
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+
+  // Example: create
+  async function addStudentFS(payload){
+    payload.created_at = firebase.firestore.FieldValue.serverTimestamp();
+    const ref = await db.collection('students').add(payload);
+    return { id: ref.id, ...payload };
+  }
+
+  // Example: update
+  async function updateStudentFS(id, payload){ await db.collection('students').doc(id).update(payload); }
+  // Example: delete
+  async function deleteStudentFS(id){ await db.collection('students').doc(id).delete(); }
+</script>
